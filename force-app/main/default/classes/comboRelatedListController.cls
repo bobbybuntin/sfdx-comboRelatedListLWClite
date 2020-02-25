@@ -63,53 +63,47 @@ public with sharing class comboRelatedListController {
                                 */
                                 
                                 
-                                String fieldName = dfield.getName();
-                                String queryStr = 'SELECT id, ' + queryFields + ' FROM ' + relatedObjectName + ' WHERE ' + fieldName + '= \'' + String.escapeSingleQuotes(searchKey) + '\'';
-                                List<sObject> lst = Database.query(queryStr);
-
-                                //take the list of sobjects, convert them into a list of generic maps that can be used by the datatable and can 
-                                //include the relationship name as an extra column
-
-                                if (lst.size() > 0)
-                                {
-                                    for (sObject item : lst)
-                                    {
-
-                                        Map<String,String> tableValues = new Map <String, String>();
-                                        //tableValues.put('Id',item.id);
-                                        
-                                        String nameString = (String)item.get('Name');
-                                        for (String itemName : columnsList)
-                                        {
-                                            tableValues.put(itemName, (String)item.get(itemName));
-                                        }
-                                        //tableValues.put('Name', nameString);
-                                        tableValues.put('Relationship',dfield.getRelationshipName() );
-                                        tableValues.put('UrlName' , URL.getSalesforceBaseUrl().toExternalForm() + '/' + item.id);
-
-                                        mapresults.add(tableValues);
-                                    }
-                                    results.addAll(lst);
-                                }
-
+                               
                                 /*      End of the logic that needs to move outside the for loop. */
                             }
                         }
                     }
-                }//end for loop of child object fields describe
+            }//end for loop of child object fields describe
 
-                for(String lu : lookupRelationshipFieldList)
+            for(String lu : lookupRelationshipFieldList)
+            {
+                //Build the WHERE clause of the child records query
+                queryWhereClause = lu + ' = \'' + String.escapeSingleQuotes(searchKey) + '\'';
+                String queryStr = 'SELECT id, ' + queryFields + ' FROM ' + relatedObjectName + ' WHERE ' + queryWhereClause;
+                List<sObject> lst = Database.query(queryStr);
+
+
+                if (lst.size() > 0)
                 {
-                    if (!String.isBlank(queryWhereClause))
+                    for (sObject item : lst)
                     {
-                        queryWhereClause += ' OR ';
+
+                        Map<String,String> tableValues = new Map <String, String>();
+                        tableValues.put('Id',item.id);
+                        //take the list of sobjects, convert them into a list of generic maps that can be used by the datatable and can 
+                        //include the relationship name as an extra column                       
+                        //String nameString = (String)item.get('Name'); //doesn't work on case object because there is no name field
+                        for (String itemName : columnsList)
+                        {
+                            tableValues.put(itemName, String.valueOf(item.get(itemName)));
+                            System.Debug('String value of item = ' + String.valueOf(item.get(itemName)));
+                        }
+                        tableValues.put('Relationship',lu);
+                        tableValues.put('UrlName' , URL.getSalesforceBaseUrl().toExternalForm() + '/' + item.id);
+
+                        mapresults.add(tableValues);
                     }
-                    //Build the WHERE clause of the child records query
-                    queryWhereClause += lu + ' = \'' + String.escapeSingleQuotes(searchKey) + '\'';
+                    results.addAll(lst);
                 }
-
-                System.Debug('Query WHERE clause =' + queryWhereClause);
-
+            }
+            System.Debug('Map results = ' + mapresults);
             return mapresults;
-    }
+    }//end of getRelatedRecords method
+
+    
 }
