@@ -53,6 +53,7 @@ export default class RelatedListLWCcomponent extends LightningElement {
     @api objectApiName;
     @api columnFields;
     @api urlField;
+    @api includeRelationshipName;
 
     
 
@@ -122,6 +123,15 @@ export default class RelatedListLWCcomponent extends LightningElement {
                     };
                     columns2.push(theColumnDefinition);
                 }
+            }
+            if (this.includeRelationshipName)
+            {
+                var theColumnDefinition = {
+                    label : 'Relationship',
+                    fieldName : 'Relationship',
+                    type : 'text' //'text'
+                };
+                columns2.push(theColumnDefinition);
             }
         }
         //console.log(columns2);
@@ -208,7 +218,6 @@ export default class RelatedListLWCcomponent extends LightningElement {
     //DONE (though perhaps fragile) Replace column labels with the field label instead of the api name
     //Add handling to ensure a reasonable number of max columns
     //enbale column sorting options
-    //get github to accept a push
 
 
 
