@@ -10,6 +10,7 @@
     <property name="chosenObject" type="String"  datasource="apex://relatedListLWCAppBuilderAttributes" />
     <property name="columnFields" type="String"  />
      <property name="urlField" type="String"  />
+     <property name="includeRelationshipName" type="Boolean" label="Include relationship name as a column?"  default="true"/>
     </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
