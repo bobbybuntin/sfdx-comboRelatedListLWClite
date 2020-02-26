@@ -1,14 +1,18 @@
 <template>
-    <lightning-card title= {chosenObject} icon-name = "none" class="slds-card_boundary">
+    <lightning-card title= {componentTitle} icon-name = "none" class="slds-card_boundary">
             <div class="slds-card__body">
               
         <lightning-datatable columns={columns} 
-                            data={relatedRecords.data} 
+                            data={displayRows} 
                             key-field="id"
                             hide-checkbox-column="true"
                             show-row-number-column="true"></lightning-datatable>
                             </div>
-
-                            <p slot="footer">Card Footer</p>
+                            
+                                <p slot="footer" title={moreRecordsToShow} >
+                                    
+                                    <template if:true={moreRecordsToShow} ><a onclick = {showMore}>{footerText}</a></template></p>
+                            
+                            
     </lightning-card>
 </template>

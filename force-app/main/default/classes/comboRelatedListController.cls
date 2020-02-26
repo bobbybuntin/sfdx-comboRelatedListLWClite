@@ -5,14 +5,19 @@ public with sharing class comboRelatedListController {
     }
 
     @AuraEnabled(cacheable=true)
-    public static list<Map<String, String>> getRelatedRecords(string searchKey, string objectName, string relatedObjectName, 
-        string columnFields, string urlField)
+    //public static list<Map<String, String>> getRelatedRecords(string searchKey, string objectName, string relatedObjectName, 
+      //  string columnFields, string urlField)
+        public static list<Map<String, Object>> getRelatedRecords(string searchKey, string objectName, string relatedObjectName, 
+        string columnFields, string urlField, String pageSize, String pageNumber)
     {
             List<sObject> results = new List<sObject>();
-            List<Map<String, String>> mapresults = new List<Map<String, String>>();
+            //List<Map<String, String>> mapresults = new List<Map<String, String>>();
+            List<Map<String, Object>> mapresults = new List<Map<String, Object>>();
             String queryFields = '';
             String queryWhereClause = '';
+            String queryLImitClause = 'LIMIT 1000';
             List<String> lookupRelationshipFieldList = new List<String>();
+
 
             //find the relationship fields in the related object
             map<string, Map<String, Schema.SObjectField>> objectFieldsMap = new map<string, Map<String, Schema.SObjectField>>(); //Object field schema map
@@ -74,7 +79,9 @@ public with sharing class comboRelatedListController {
             {
                 //Build the WHERE clause of the child records query
                 queryWhereClause = lu + ' = \'' + String.escapeSingleQuotes(searchKey) + '\'';
-                String queryStr = 'SELECT id, ' + queryFields + ' FROM ' + relatedObjectName + ' WHERE ' + queryWhereClause;
+                queryLimitClause = Integer.valueOf(pageSize) + ' OFFSET '  + (Integer.valueOf(pageSize)*(Integer.valueOf(pageNumber )-1));
+                String queryStr = 'SELECT id, ' + queryFields + ' FROM ' + relatedObjectName + ' WHERE ' + queryWhereClause + ' LIMIT ' + queryLImitClause;
+                System.Debug('Query string = ' + queryStr);
                 List<sObject> lst = Database.query(queryStr);
 
 
@@ -83,14 +90,16 @@ public with sharing class comboRelatedListController {
                     for (sObject item : lst)
                     {
 
-                        Map<String,String> tableValues = new Map <String, String>();
+                        //Map<String,String> tableValues = new Map <String, String>();
+                        Map<String,Object> tableValues = new Map <String, Object>();
                         tableValues.put('Id',item.id);
                         //take the list of sobjects, convert them into a list of generic maps that can be used by the datatable and can 
                         //include the relationship name as an extra column                       
                         //String nameString = (String)item.get('Name'); //doesn't work on case object because there is no name field
                         for (String itemName : columnsList)
                         {
-                            tableValues.put(itemName, String.valueOf(item.get(itemName)));
+                            //tableValues.put(itemName, String.valueOf(item.get(itemName)));
+                            tableValues.put(itemName, item.get(itemName));
                             System.Debug('String value of item = ' + String.valueOf(item.get(itemName)));
                         }
                         tableValues.put('Relationship',lu);
