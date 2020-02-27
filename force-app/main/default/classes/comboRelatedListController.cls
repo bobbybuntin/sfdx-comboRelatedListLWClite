@@ -1,13 +1,13 @@
 public with sharing class comboRelatedListController {
     public List<Contact> contactList {get;set;}
     public comboRelatedListController (){
-        this.contactList = new List<Contact>();
+        this.contactList = new List<Contact>();//not used just placeholder for the constructor
     }
 
     @AuraEnabled(cacheable=true)
     //public static list<Map<String, String>> getRelatedRecords(string searchKey, string objectName, string relatedObjectName, 
       //  string columnFields, string urlField)
-        public static list<Map<String, Object>> getRelatedRecords(string searchKey, string objectName, string relatedObjectName, 
+        public static Map<String, Object> getRelatedRecords(string searchKey, string objectName, string relatedObjectName, 
         string columnFields, string urlField, String pageSize, String pageNumber)
     {
             List<sObject> results = new List<sObject>();
@@ -15,8 +15,11 @@ public with sharing class comboRelatedListController {
             List<Map<String, Object>> mapresults = new List<Map<String, Object>>();
             String queryFields = '';
             String queryWhereClause = '';
-            String queryLimitClause = '1000';  //this is the default limit on number of records returned per child relationship
+            Integer queryLimit = 1000;
+            Integer totalRecordCount = 0;
+            String queryLimitClause = String.valueOf(queryLimit);  //this is the default limit on number of records returned per child relationship
             List<String> lookupRelationshipFieldList = new List<String>();
+            Boolean relationshipChildRecordsOverLimitWarning = false;
 
 
             //find the relationship fields in the related object
@@ -84,6 +87,14 @@ public with sharing class comboRelatedListController {
                 System.Debug('Query string = ' + queryStr);
                 List<sObject> lst = Database.query(queryStr);
 
+                String countQueryStr = 'SELECT count() FROM ' + relatedObjectName + ' WHERE ' + queryWhereClause;
+                Integer theRecordCount = Database.countQuery(countQueryStr);
+
+                totalRecordCount += theRecordCount;
+
+                If (theRecordCount > queryLimit)
+                    relationshipChildRecordsOverLimitWarning = true;  //need to include over query limit warning in the results payload
+
 
                 if (lst.size() > 0)
                 {
@@ -107,11 +118,27 @@ public with sharing class comboRelatedListController {
 
                         mapresults.add(tableValues);
                     }
-                    results.addAll(lst);
+                    //results.addAll(lst);
                 }
             }
-            System.Debug('Map results = ' + mapresults);
-            return mapresults;
+            //*************************************    Component Warning Messages     ******************************* */
+            //testing out adding of other messages to the mapresults payload to be extracted in the component
+            List<String> componentMessages = new List<String>();
+
+            if(relationshipChildRecordsOverLimitWarning)
+                componentMessages.add('There are too many related records to show all of them in this list.');
+            //mapresults.add(componentMessages);
+            //-------------------------------------------------------------------
+
+
+
+            Map<String,Object> resultsPayload = new Map<String, Object>();
+            resultsPayload.put('recordsList', mapresults);
+            resultsPayload.put('componentWarnings',componentMessages);
+            resultsPayload.put('totalRecordCount', totalRecordCount);
+            return resultsPayload;
+            //System.Debug('Map results = ' + mapresults);
+            //return mapresults;
     }//end of getRelatedRecords method
 
     

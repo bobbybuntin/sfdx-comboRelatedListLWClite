@@ -47,6 +47,9 @@ export default class RelatedListLWCcomponent extends LightningElement {
     @track pageSize = 5;
     @track pageNumber = 1;
     @track footerText = 'Show 5 more';
+    @track recordCount = 0;
+    @track warningMessages = '';
+    @track displayWarningMessages = false;
     //@track moreRecordsToShow = false;
     @api recordId;
     @api chosenObject;
@@ -72,8 +75,31 @@ export default class RelatedListLWCcomponent extends LightningElement {
         if (data) {
            // console.log('Next item will show related records data retrieved:');
             //console.log(data);
-            this.data = data;
-            this.handlePageChange();
+            if('componentWarnings' in data)
+            {
+                if(data.componentWarnings.length > 0)
+                this.displayWarningMessages = true;
+
+                for (var x in data.componentWarnings)
+                    {
+                        //console.log(data[x])
+                        console.log('Component Message: ' + data.componentWarnings[x]);
+                        //data.splice(x);
+                        this.warningMessages = data.componentWarnings[x] + '\n';
+                        
+                    }
+            }
+            if(data.recordsList)
+            {
+                this.data = data.recordsList;
+                this.handlePageChange();
+            }
+
+            if(data.totalRecordCount)
+            {
+                this.recordCount = data.totalRecordCount;
+            }
+            
         }
         
         else 
@@ -183,11 +209,8 @@ export default class RelatedListLWCcomponent extends LightningElement {
     }
 
     get componentTitle(){
-        var recordCount = 0;
-        if(this.data)
-        recordCount = this.data.length;
-        
-        return (this.chosenObject + ' (' + recordCount + ')');
+
+        return (this.chosenObject + ' (' + this.recordCount + ')');
     }
     /*
     get pageSize() {

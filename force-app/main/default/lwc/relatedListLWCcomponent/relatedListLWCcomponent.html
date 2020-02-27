@@ -1,7 +1,15 @@
 <template>
+
     <lightning-card title= {componentTitle} icon-name = "none" class="slds-card_boundary">
+        <template if:true={displayWarningMessages}>
+            <div class="slds-p-around_small lgc-bg">
+                <lightning-icon icon-name="utility:warning" alternative-text="Warning!" variant="warning"
+    title="warning variant small" size="small"></lightning-icon>
+                {warningMessages}
+        </div>
+        </template>
             <div class="slds-card__body">
-              
+ 
         <lightning-datatable columns={columns} 
                             data={displayRows} 
                             key-field="id"
