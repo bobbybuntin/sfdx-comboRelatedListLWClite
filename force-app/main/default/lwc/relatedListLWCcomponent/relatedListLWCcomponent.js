@@ -54,6 +54,7 @@ export default class RelatedListLWCcomponent extends LightningElement {
     @api columnFields;
     @api urlField;
     @api includeRelationshipName;
+    @api showMoreIncrement;
 
     
 
@@ -69,8 +70,8 @@ export default class RelatedListLWCcomponent extends LightningElement {
                                 pageSize : 100, pageNumber : 1})
     relatedRecords ({ data, error}){
         if (data) {
-            console.log('Next item will show related records data retrieved:');
-            console.log(data);
+           // console.log('Next item will show related records data retrieved:');
+            //console.log(data);
             this.data = data;
             this.handlePageChange();
         }
@@ -78,12 +79,12 @@ export default class RelatedListLWCcomponent extends LightningElement {
         else 
         {
         this.data = [];
-        console.log ('Error: could not retrieve any row data');
+        //console.log ('Error: could not retrieve any row data');
         }
     }
     
     showMore() {
-        this.pageSize += 5;
+        this.pageSize += this.showMoreIncrement;
         this.handlePageChange();
     }
 
@@ -144,50 +145,41 @@ export default class RelatedListLWCcomponent extends LightningElement {
         if (field === 'pageSize') {
             this.pageSize = event.target.value;
             this.footerText = 'New page size is ' + this.pageSize.toString();
-            console.log('pageSize Changed');
+            //console.log('pageSize Changed');
             this.handlePageChange();
         }
-        else
-        console.log('something changed but it was not pageSize.  it was ' + field);
+        //console.log('something changed but it was not pageSize.  it was ' + field);
     }
 
     handlePageChange() {
-        //totalPages = data.length() / this.pageSize;
-        console.log('Handling page change.');
-        console.log(this.displayRows);
-        console.log(this.data);
-        console.log(this.pageNumber);
-        console.log(this.pageSize);
-        console.log((this.pageNumber - 1) * this.pageSize);
-        console.log('Attempting to update display rows');
+
         this.displayRows = this.data.slice((this.pageNumber - 1) * this.pageSize, this.pageSize);
-        console.log(this.displayRows);
-        //this.displayRows = data.slice()
-        this.checkMoreRecordsToShow();
     }
-
-    checkMoreRecordsToShow() {
-        console.log('Checking for more records to show...');
-        console.log(this.data);
-        console.log(this.data.length);
-        /*
-        if(this.data.length > this.pageSize)
-        this.moreRecordsToShow = true;
-        else
-        this.moreRecordsToShow = false;
-        */
-        console.log('MOre records to show is ....' + this.moreRecordsToShow);
-    }
-
+    
     get  moreRecordsToShow(){
+        //used in the html view to determine whether or not to show the footer show more link
+        if(this.data.length > this.pageSize)
+            return true;
+        else
+            return false;
+    }
+
+    get showMoreText() {
         if(this.data.length > this.pageSize)
         {
-            console.log('returend true for more records to show this.pageSize');
-        return true;
+            var remainingRecordCount = this.data.length - this.pageSize;
+            console.log('remainingRecordCount : ' + remainingRecordCount);
+            console.log('showMoreIncrement : ' + this.showMoreIncrement);
+            if(remainingRecordCount > this.showMoreIncrement)
+                {
+                    return ('Show ' + this.showMoreIncrement + ' more');
+                }
+            else{
+                return ('Show ' + (this.data.length - this.pageSize) + ' more');
+            }
         }
         else
-        return false;
-
+        return 'No more records';
     }
 
     get componentTitle(){

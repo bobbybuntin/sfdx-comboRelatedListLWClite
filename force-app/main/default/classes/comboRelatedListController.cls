@@ -15,7 +15,7 @@ public with sharing class comboRelatedListController {
             List<Map<String, Object>> mapresults = new List<Map<String, Object>>();
             String queryFields = '';
             String queryWhereClause = '';
-            String queryLImitClause = 'LIMIT 1000';
+            String queryLimitClause = '1000';  //this is the default limit on number of records returned per child relationship
             List<String> lookupRelationshipFieldList = new List<String>();
 
 
@@ -79,8 +79,8 @@ public with sharing class comboRelatedListController {
             {
                 //Build the WHERE clause of the child records query
                 queryWhereClause = lu + ' = \'' + String.escapeSingleQuotes(searchKey) + '\'';
-                queryLimitClause = Integer.valueOf(pageSize) + ' OFFSET '  + (Integer.valueOf(pageSize)*(Integer.valueOf(pageNumber )-1));
-                String queryStr = 'SELECT id, ' + queryFields + ' FROM ' + relatedObjectName + ' WHERE ' + queryWhereClause + ' LIMIT ' + queryLImitClause;
+                //queryLimitClause = Integer.valueOf(pageSize) + ' OFFSET '  + (Integer.valueOf(pageSize)*(Integer.valueOf(pageNumber )-1));//can be used for server side pagination
+                String queryStr = 'SELECT id, ' + queryFields + ' FROM ' + relatedObjectName + ' WHERE ' + queryWhereClause + ' LIMIT ' + queryLimitClause;
                 System.Debug('Query string = ' + queryStr);
                 List<sObject> lst = Database.query(queryStr);
 
